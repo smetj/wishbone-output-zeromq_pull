@@ -1,3 +1,5 @@
+::
+
               __       __    __
     .--.--.--|__.-----|  |--|  |--.-----.-----.-----.
     |  |  |  |  |__ --|     |  _  |  _  |     |  -__|
@@ -11,7 +13,7 @@
     wishbone.input.zmqpull
     ======================
 
-    Version: 0.1.0
+    Version: 1.0.0
 
     Pulls events from one or more ZeroMQ push modules.
     --------------------------------------------------
@@ -44,5 +46,3 @@
 
             - outbox
                |  Events arriving from the outside.
-
-
