@@ -27,7 +27,7 @@ from setuptools.command.test import test as TestCommand
 
 
 PROJECT = 'wishbone_input_zmqpull'
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 
 install_requires = [
     'wishbone>=3',
