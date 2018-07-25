@@ -22,4 +22,4 @@
 #
 #
 
-from zmqpullin import ZMQPullIn
+from .zmqpullin import ZMQPullIn
