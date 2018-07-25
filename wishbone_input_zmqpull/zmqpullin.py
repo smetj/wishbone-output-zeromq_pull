@@ -22,13 +22,14 @@
 #
 #
 
-
-from wishbone import Actor
-from wishbone.event import Event
 import zmq.green as zmq
+from wishbone.module import InputModule
+from wishbone.event import Event
+from wishbone.error import ModuleInitFailure
 
 
-class ZMQPullIn(Actor):
+class ZMQPullIn(InputModule):
+
 
     '''**Pulls events from one or more ZeroMQ push modules.**
 
@@ -62,26 +63,37 @@ class ZMQPullIn(Actor):
 
     '''
 
-    def __init__(self, actor_config, mode="server", interface="0.0.0.0", port=19283, servers=[]):
-        Actor.__init__(self, actor_config)
+    def __init__(
+            self,
+            actor_config,
+            parralel_streams=1,
+            native_events=False,
+            payload=None,
+            destination="data",
+            interface='0.0.0.0',
+            mode="client",
+            port=19283,
+    ):
+        InputModule.__init__(self, actor_config)
         self.pool.createQueue("outbox")
 
     def preHook(self):
-
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PULL)
-
-        if self.kwargs.mode == "server":
-            self.socket.bind("tcp://*:%s" % self.kwargs.port)
-            self.logging.info("Listening on port %s" % (self.kwargs.port))
+        uri = "tcp://{}:{}".format(self.kwargs.interface, self.kwargs.port)
+        if self.kwargs.mode == 'client':
+            self.socket.connect(uri)
+        elif self.kwargs.mode == 'server':
+            self.socket.bind(uri)
         else:
-            self.socket.connect("tcp://%s" % self.kwargs.servers[0])
-
+            raise ModuleInitFailure(
+                "Invalid socket mode {}. Should be on of ('server', 'client')".format(
+                    self.kwargs.mode
+                )
+            )
         self.sendToBackground(self.drain)
 
     def drain(self):
-
         while self.loop():
-            data = self.socket.recv()
-            event = Event(data)
-            self.submit(event, self.pool.queue.outbox)
+            data = self.socket.recv_json()
+            self.submit(Event(data), "outbox")
